@@ -1,0 +1,23 @@
+-----------------------------------CHANGED-----------------------------------
+mainscreen.html {
+line 14 - Changed the title text. (Store Inventory)
+line 19 - H1 tag text became a variable.
+line 90 - added an hr tag
+line 91 to 93 - added a link to the settings page
+}
+
+MainScreenController.java {
+lines 2, 3, 4 - import org.springframework.beans.factory.annotation.Autowired;
+                import com.example.demo.domain.UserEntity;
+                import com.example.demo.repositories.UserRepository;
+lines 31, 32 - @Autowired, added the UserRepository to the MainScreenController.
+lines 57 to 67 - added code to retrieve the store name from the database.
+}
+
+-----------------------------------CREATED-----------------------------------
+
+Settings.html - added to be able to remotely set the store Name.
+NameForm.java - added to DTO folder.
+FormController.java - added to Controller folder.
+UseEntity.java - added to domain folder.
+UserRepository.java - added to repository folder.
