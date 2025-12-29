@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -50,44 +52,96 @@ public class AddProductController {
 
     @PostMapping("/showFormAddProduct")
     public String submitForm(@Valid @ModelAttribute("product") Product product, BindingResult bindingResult, Model theModel) {
+
+        // 1. Send the product back to the model immediately (in case of error)
         theModel.addAttribute("product", product);
 
-        if(bindingResult.hasErrors()){
-            ProductService productService = context.getBean(ProductServiceImpl.class);
-            Product product2 = new Product();
-            try {
-                product2 = productService.findById((int) product.getId());
-            } catch (Exception e) {
-                System.out.println("Error Message " + e.getMessage());
-            }
-            theModel.addAttribute("parts", partService.findAll());
-            List<Part>availParts=new ArrayList<>();
-            for(Part p: partService.findAll()){
-                if(!product2.getParts().contains(p))availParts.add(p);
-            }
-            theModel.addAttribute("availparts",availParts);
-            theModel.addAttribute("assparts",product2.getParts());
-            return "productForm";
+        // 2. Fetch the "Real" Product from DB to get the Parts List
+        ProductService repo = context.getBean(ProductServiceImpl.class);
+        Product productFromDB = repo.findById((int) product.getId());
+
+        if (productFromDB != null) {
+            product.setParts(productFromDB.getParts());
         }
- //       theModel.addAttribute("assparts", assparts);
- //       this.product=product;
-//        product.getParts().addAll(assparts);
-        else {
-            ProductService repo = context.getBean(ProductServiceImpl.class);
-            if(product.getId()!=0) {
-                Product product2 = repo.findById((int) product.getId());
-                PartService partService1 = context.getBean(PartServiceImpl.class);
-                if(product.getInv()- product2.getInv()>0) {
-                    for (Part p : product2.getParts()) {
-                        int inv = p.getInv();
-                        p.setInv(inv - (product.getInv() - product2.getInv()));
-                        partService1.save(p);
-                    }
+
+        // 3. LOGIC CHECK: Do we have enough parts?
+
+        int productDelta = 0;
+        if (productFromDB != null) {
+            productDelta = product.getInv() - productFromDB.getInv();
+        } else {
+            productDelta = product.getInv(); // New product
+        }
+
+        if (productDelta > 0) {
+            PartService partService = context.getBean(PartServiceImpl.class);
+
+            // Count required parts
+            Map<Integer, Integer> partCounts = new HashMap<>();
+            for (Part p : product.getParts()) {
+                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
+            }
+
+            // Check stock for each part
+            for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
+                int partId = entry.getKey();
+                int qtyNeededPerProduct = entry.getValue();
+                int totalNeededForUpdate = productDelta * qtyNeededPerProduct;
+
+                Part p = partService.findById(partId);
+
+                if (p.getInv() < totalNeededForUpdate) {
+                    // FAILURE: Add error message and STOP
+                    bindingResult.rejectValue("inv", "error.inv",
+                            "Not enough stock! You need " + totalNeededForUpdate + " " + p.getName() +
+                                    "(s), but have " + p.getInv());
                 }
             }
-            else{
-                product.setInv(0);
+        }
+
+        // 4. FINAL ERROR CHECK (Standard Validation + Stock Check)
+        if (bindingResult.hasErrors()) {
+            // RE-POPULATE THE MODEL
+            theModel.addAttribute("parts", context.getBean(PartServiceImpl.class).findAll());
+
+            List<Part> availParts = new ArrayList<>();
+            for (Part p : context.getBean(PartServiceImpl.class).findAll()) {
+                availParts.add(p);
             }
+            theModel.addAttribute("availparts", availParts);
+
+            // Calculate counts for display again
+            Map<Part, Integer> partWithCounts = new HashMap<>();
+            for (Part p : product.getParts()) {
+                partWithCounts.put(p, partWithCounts.getOrDefault(p, 0) + 1);
+            }
+            theModel.addAttribute("assparts", partWithCounts.keySet());
+            theModel.addAttribute("partCounts", partWithCounts);
+
+            return "productForm"; // Go back to form with error message
+        }
+
+        // 5. SUCCESS: Deduct Inventory and Save
+        else {
+            PartService partService = context.getBean(PartServiceImpl.class);
+
+            // We already calculated Delta above, but let's redo the math to be safe
+            if (productDelta > 0) {
+                Map<Integer, Integer> partCounts = new HashMap<>();
+                for (Part p : product.getParts()) {
+                    partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
+                }
+
+                for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
+                    int partId = entry.getKey();
+                    int qtyNeededPerProduct = entry.getValue();
+
+                    Part p = partService.findById(partId);
+                    p.setInv(p.getInv() - (productDelta * qtyNeededPerProduct));
+                    partService.save(p);
+                }
+            }
+
             repo.save(product);
             return "confirmationaddproduct";
         }
@@ -95,20 +149,37 @@ public class AddProductController {
 
     @GetMapping("/showProductFormForUpdate")
     public String showProductFormForUpdate(@RequestParam("productID") int theId, Model theModel) {
+        // 1. Load Data
         theModel.addAttribute("parts", partService.findAll());
         ProductService repo = context.getBean(ProductServiceImpl.class);
         Product theProduct = repo.findById(theId);
-        product1=theProduct;
-    //    this.product=product;
-        //set the employ as a model attibute to prepopulate the form
+        // 2. Set Static Variable
+        product1 = theProduct;
+
+        // 3. Set Product in Model
         theModel.addAttribute("product", theProduct);
-        theModel.addAttribute("assparts",theProduct.getParts());
-        List<Part>availParts=new ArrayList<>();
+
+        // 4. PREPARE AVAILABLE PARTS
+        // Allow ALL parts to be shown, so a 2nd or 3rd copy of the same part may be added.
+        List<Part> availParts = new ArrayList<>();
         for(Part p: partService.findAll()){
-            if(!theProduct.getParts().contains(p))availParts.add(p);
+            availParts.add(p);
         }
-        theModel.addAttribute("availparts",availParts);
-        //send over to our form
+        theModel.addAttribute("availparts", availParts);
+
+
+        // 5. PREPARE ASSOCIATED PARTS
+        // Count the parts:
+        Map<Part, Integer> partWithCounts = new HashMap<>();
+        for (Part p : theProduct.getParts()) {
+            partWithCounts.put(p, partWithCounts.getOrDefault(p, 0) + 1);
+        }
+
+        // Send UNIQUE parts for the rows
+        theModel.addAttribute("assparts", partWithCounts.keySet());
+        // Send the COUNTS to display the quantity
+        theModel.addAttribute("partCounts", partWithCounts);
+
         return "productForm";
     }
 
@@ -133,44 +204,106 @@ public class AddProductController {
 // make the add and remove buttons work
 
     @GetMapping("/associatepart")
-    public String associatePart(@Valid @RequestParam("partID") int theID, Model theModel){
-    //    theModel.addAttribute("product", product);
-    //    Product product1=new Product();
-        if (product1.getName()==null) {
-            return "saveproductscreen";
+    public String associatePart(@Valid @RequestParam("partID") int theID,
+                                @RequestParam("amount") int amount,
+                                Model theModel){
+
+        // 1. Safety Check: If app restarted, go back to main screen
+        if (product1 == null) {
+            return "redirect:/mainscreen";
         }
-        else{
-        product1.getParts().add(partService.findById(theID));
-        partService.findById(theID).getProducts().add(product1);
+
+        // 2. Safety Check: Invalid Amount
+        if (amount <= 0) {
+            return "redirect:/showProductFormForUpdate?productID=" + product1.getId();
+        }
+
+        // 3.Fetch a FRESH copy of the product from the database.
         ProductService productService = context.getBean(ProductServiceImpl.class);
-        productService.save(product1);
-        partService.save(partService.findById(theID));
-        theModel.addAttribute("product", product1);
-        theModel.addAttribute("assparts",product1.getParts());
-        List<Part>availParts=new ArrayList<>();
-        for(Part p: partService.findAll()){
-            if(!product1.getParts().contains(p))availParts.add(p);
+        Product productToSave = productService.findById((int)product1.getId());
+
+        // 4. Fetch the Part
+        PartService partService = context.getBean(PartServiceImpl.class);
+        Part thePart = partService.findById(theID);
+
+        // 5. Add the Part (Loop for duplicates)
+        for (int i = 0; i < amount; i++) {
+            productToSave.getParts().add(thePart);
         }
-        theModel.addAttribute("availparts",availParts);
-        return "productForm";}
- //        return "confirmationassocpart";
+
+        // 6. Save the FRESH product
+        productService.save(productToSave);
+
+        // 7. Update the static variable so the View sees the new data
+        product1 = productToSave;
+
+        // 8. Rebuild the Model for the View
+        theModel.addAttribute("product", product1);
+
+        // Show ALL parts (Can add duplicates)
+        List<Part> availParts = new ArrayList<>();
+        for (Part p : partService.findAll()) {
+            availParts.add(p);
+        }
+        theModel.addAttribute("availparts", availParts);
+
+        // Count the parts for display
+        Map<Part, Integer> partWithCounts = new HashMap<>();
+        for (Part p : product1.getParts()) {
+            partWithCounts.put(p, partWithCounts.getOrDefault(p, 0) + 1);
+        }
+
+        theModel.addAttribute("assparts", partWithCounts.keySet());
+        theModel.addAttribute("partCounts", partWithCounts);
+
+        return "productForm";
     }
+
     @GetMapping("/removepart")
     public String removePart(@RequestParam("partID") int theID, Model theModel){
-        theModel.addAttribute("product", product);
-      //  Product product1=new Product();
-        product1.getParts().remove(partService.findById(theID));
-        partService.findById(theID).getProducts().remove(product1);
-        ProductService productService = context.getBean(ProductServiceImpl.class);
-        productService.save(product1);
-        partService.save(partService.findById(theID));
-        theModel.addAttribute("product", product1);
-        theModel.addAttribute("assparts",product1.getParts());
-        List<Part>availParts=new ArrayList<>();
-        for(Part p: partService.findAll()){
-            if(!product1.getParts().contains(p))availParts.add(p);
+
+        // 1. Safety Check
+        if (product1 == null) {
+            return "redirect:/mainscreen";
         }
-        theModel.addAttribute("availparts",availParts);
+
+        // 2. Fetch Fresh Product (Prevents "Multiple Representations" Error)
+        ProductService productService = context.getBean(ProductServiceImpl.class);
+        Product productToSave = productService.findById((int)product1.getId());
+
+        // 3. Fetch the Part to remove
+        PartService partService = context.getBean(PartServiceImpl.class);
+        Part partToRemove = partService.findById(theID);
+
+        // 4. Remove ONE instance of the part
+        if(productToSave.getParts().contains(partToRemove)){
+            productToSave.getParts().remove(partToRemove);
+        }
+
+        // 5. Save
+        productService.save(productToSave);
+
+        // 6. Update Static Variable
+        product1 = productToSave;
+
+        // 7. Rebuild Model
+        theModel.addAttribute("product", product1);
+
+        // Show ALL Parts (Don't hide the part)
+        List<Part> availParts = new ArrayList<>();
+        for (Part p : partService.findAll()) {
+            availParts.add(p);
+        }
+        theModel.addAttribute("availparts", availParts);
+
+        // Count the parts
+        Map<Part, Integer> partWithCounts = new HashMap<>();
+        for (Part p : product1.getParts()) {
+            partWithCounts.put(p, partWithCounts.getOrDefault(p, 0) + 1);
+        }
+        theModel.addAttribute("assparts", partWithCounts.keySet());
+        theModel.addAttribute("partCounts", partWithCounts);
+
         return "productForm";
     }
 }
