@@ -33,10 +33,8 @@ public abstract class Part implements Serializable {
     @Min(value = 0, message = "Maximum inventory value must be positive")
     private int max;
 
-    @ManyToMany
-    @JoinTable(name="product_part", joinColumns = @JoinColumn(name="part_id"),
-            inverseJoinColumns=@JoinColumn(name="product_id"))
-    Set<Product> products= new HashSet<>();
+    @ManyToMany(mappedBy = "parts")
+    Set<Product> products = new HashSet<>();
 
     public Part() {
     }

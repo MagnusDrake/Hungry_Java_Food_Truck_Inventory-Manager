@@ -6,8 +6,8 @@ import com.example.demo.validators.ValidProductPrice;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List; // <--- Changed from Set to List
 
 /**
  *
@@ -28,8 +28,14 @@ public class Product implements Serializable {
     double price;
     @Min(value = 0, message = "Inventory value must be positive")
     int inv;
-    @ManyToMany(cascade=CascadeType.ALL, mappedBy = "products")
-    Set<Part> parts= new HashSet<>();
+    // 1. Changed to List to allow duplicates
+    // 2. Added @JoinTable here so Product "Owns" the list
+    @ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "product_part",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "part_id"))
+    @OrderColumn(name = "parts_order")
+    private List<Part> parts = new ArrayList<>();
 
     public Product() {
     }
@@ -79,17 +85,19 @@ public class Product implements Serializable {
         this.inv = inv;
     }
 
-    public Set<Part> getParts() {
+    // --- UPDATE GETTERS AND SETTERS TO MATCH LIST ---
+    public List<Part> getParts() {
         return parts;
     }
 
-    public void setParts(Set<Part> parts) {
+    public void setParts(List<Part> parts) {
         this.parts = parts;
     }
 
     public String toString(){
         return this.name;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
