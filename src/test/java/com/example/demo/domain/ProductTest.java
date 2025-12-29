@@ -3,8 +3,9 @@ package com.example.demo.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Date: 4/28/2022
  * Time: 4:01 PM
  * <p>
- * Created with IntelliJ IDEA
- * To change this template use File | Settings | File Templates.
+ * Created with IntelliJ IDEA,
+ * To change this template, use File | Settings | File Templates.
  */
 class ProductTest {
     Product product;
@@ -85,7 +86,8 @@ class ProductTest {
     void getParts() {
         Part part1 = new OutsourcedPart();
         Part part2 = new InhousePart();
-        Set<Part> myParts= new HashSet<>();
+        // CHANGED: Use List/ArrayList instead of Set/HashSet
+        List<Part> myParts = new ArrayList<>();
         myParts.add(part1);
         myParts.add(part2);
         product.setParts(myParts);
@@ -96,7 +98,8 @@ class ProductTest {
     void setParts() {
         Part part1 = new OutsourcedPart();
         Part part2 = new InhousePart();
-        Set<Part> myParts= new HashSet<>();
+        // CHANGED: Use List/ArrayList instead of Set/HashSet
+        List<Part> myParts = new ArrayList<>();
         myParts.add(part1);
         myParts.add(part2);
         product.setParts(myParts);
