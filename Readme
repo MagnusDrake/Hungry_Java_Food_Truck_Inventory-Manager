@@ -1,9 +1,15 @@
 -----------------------------------CHANGED-----------------------------------
 mainscreen.html {
-line 14 - Changed the title text. (Store Inventory)
-line 19 - H1 tag text became a variable.
-line 90 - added an hr tag
-line 91 to 93 - added a link to the settings page
+line 13 - Added a CSS link.
+line 15 - Changed the title text. (Store Inventory)
+line 20 to 23 - Added a div tag. Encapsulating the H2 and H1 tag.
+    H1 tag text became a variable.
+    H2 tag text just add context for the name of the business.
+line 25 - Changed the name from parts to Condiments. Since Im making a food truck inventory app.
+line 36, 72 - added another class to the table.
+line 93 - added an hr tag
+line 94 to 96 - added a link to the settings page
+line 97 - Wrote a text to play the role of company that creates technologies for food trucks
 }
 
 MainScreenController.java {
@@ -14,8 +20,26 @@ lines 31, 32 - @Autowired, added the UserRepository to the MainScreenController.
 lines 57 to 67 - added code to retrieve the store name from the database.
 }
 
+Part.java {
+line 31 to 34 - added two private integer field variables.
+    min for minimum inventory and max for maximum inventory.
+    Both got an annotation for validation, to make sure they are positive integers.
+line 44, 48, 49 - updated the constructor to set the variables.
+line 52, 57, 58 - updated the other constructor to set the variables.
+line 119 to 132 - added getters and setters for the variables.
+}
+
+AddInhousePartController.java {
+line 43 to 53 - added validation logic to make sure inventory, minimum and maximum behave as expected.
+}
+InhousePartForm.html {
+line 11 to 34 - added context to the form inputs.
+    Added inputs for min and max inventory.
+}
+
 -----------------------------------CREATED-----------------------------------
 
+styles.css - renamed the css file in the css folder. added data to the file.
 Settings.html - added to be able to remotely set the store Name.
 NameForm.java - added to DTO folder.
 FormController.java - added to Controller folder.
