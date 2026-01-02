@@ -1,33 +1,49 @@
------------------------------------CHANGED-----------------------------------
-C.  Customize the HTML user interface for your customer’s application. The user interface
-should include the shop name, the product names, and the names of the parts.
+-----------------------------------Task C-----------------------------------
+C. Customize the HTML user interface for your customer’s application. The user interface should include the
+    shop name, the product names, and the names of the parts.
 
-mainscreen.html {
-line 3 to 10 - CLeaned up the header. Added a CSS link for my styles.css file.
-    Changed the title text. (Store Inventory)
+    mainscreen.html {
+        line 3 to 10 - CLeaned up the header. Added a CSS link for my styles.css file.
+            Changed the title text. (Store Inventory)
 
-lines 11 to 13 - added classes to tags body and divs. Leveraging the bootstrap framework.
+        lines 11 to 13 - added classes to tags body and divs. Leveraging the bootstrap framework.
 
-line 15 to 21 - Added a div tag. Encapsulating the H2 and H1 tag.
-    H2 tag text became a variable. The store name can be changed and stored in the database.
-    H1 tag text just add context about the app itself. Used classes from bootstrap.
+        line 15 to 21 - Added a div tag. Encapsulating the H2 and H1 tag.
+            H2 tag text became a variable. The store name can be changed and stored in the database.
+            H1 tag text just add context about the app itself. Used classes from bootstrap.
 
-line 23 to 39 - Added context messages to the page. For success and error confirmations. The first two are for
-    RedirectAttribute, after a successful or failed operation in the product or part forms, by doing this I got rid
-    of pages dedicated to success and error messages. The other two are for success or failed operations after clicking
-    the Buy Now button.
+        line 23 to 39 - Added context messages to the page. For success and error confirmations. The first two are for
+            RedirectAttribute, after a successful or failed operation in the product or part forms, by doing this I got rid
+            of pages dedicated to success and error messages. The other two are for success or failed operations after clicking
+            the Buy Now button.
 
-line 74 - The column Price of the Parts table now shows numbers in dollar format.
+        line 74 - The column Price of the Parts table now shows numbers in dollar format.
 
-line 126, 134, 135 - Added a Labor Cost column to the products table. Labor Cost and Price columns show numbers in dollar format.
+        line 126, 134, 135 - Added a Labor Cost column to the products table. Labor Cost and Price columns show numbers in dollar format.
 
-line 164 to 179 - Added a footer tag. Containing the links to the Home page and the About page.
-    Also contains the link to the Settings page, which allows the store name to be changed.
+        line 164 to 179 - Added a footer tag. Containing the links to the Home page and the About page.
+            Also contains the link to the Settings page, which allows the store name to be changed.
 
-line 183 to 188 - Moved the script for the clear search button to this area. Also added a script tag to src
-    bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
-}
+        line 183 to 188 - Moved the script for the clear search button to this area. Also added a script tag to src
+            bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
+    }
 
+-----------------------------------Task D-----------------------------------
+D.  Add an “About” page to the application to describe your chosen customer’s company to web viewers and include
+        navigation to and from the “About” page and the main screen.
+
+        about.html {
+            Whole page created from scratch.
+            The page contains the store name from the database, using the thymeleaf variable.
+        }
+        AboutController.java {
+            Whole class created from scratch.
+            @GetMapping("/about") - Added the route to the page.
+            Fetches the store name from the database.
+        }
+
+-----------------------------------Task E-----------------------------------
+E.
 MainScreenController.java {
 Removed unused code.
 lines 2, 3, 4 - import org.springframework.beans.factory.annotation.Autowired;
