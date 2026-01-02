@@ -1,4 +1,4 @@
------------------------------------Task C-----------------------------------
+-----------------------------------------------------Task C-------------------------------------------------------------
 C. Customize the HTML user interface for your customer’s application. The user interface should include the
     shop name, the product names, and the names of the parts.
 
@@ -13,24 +13,35 @@ C. Customize the HTML user interface for your customer’s application. The user
             H1 tag text just add context about the app itself. Used classes from bootstrap.
 
         line 23 to 39 - Added context messages to the page. For success and error confirmations. The first two are for
-            RedirectAttribute, after a successful or failed operation in the product or part forms, by doing this I got rid
-            of pages dedicated to success and error messages. The other two are for success or failed operations after clicking
-            the Buy Now button.
+            RedirectAttribute, after a successful or failed operation in the product or part forms. The other two are
+            for success or failed operations after clicking the Buy Now button.By doing this I got rid of the pages
+            dedicated to success and error messages.
 
-        line 74 - The column Price of the Parts table now shows numbers in dollar format.
+        line 68, 77 - Added Min/Max column to the Parts table. Both numbers on the same column
 
-        line 126, 134, 135 - Added a Labor Cost column to the products table. Labor Cost and Price columns show numbers in dollar format.
+        line 75 - The column Price of the Parts table now shows numbers in dollar format.
 
-        line 164 to 179 - Added a footer tag. Containing the links to the Home page and the About page.
+        line 84 to 87 - Refactored the delete part message to show the name of the part being deleted.
+
+        line 131, 139, 140 - Added a Labor Cost column to the products table. Labor Cost and Price columns show numbers in dollar format.
+
+        line 144 to 145 - Added Buy Now button to the products table.
+
+        line 150 to 155 - Refactored the delete part message to show the name of the product being deleted.
+
+        line 173 to 188 - Added a footer tag. Containing the links to the Home page and the About page.
             Also contains the link to the Settings page, which allows the store name to be changed.
 
-        line 183 to 188 - Moved the script for the clear search button to this area. Also added a script tag to src
+        line 192 to 197 - Moved the script for the clear search button to this area. Also added a script tag to src
             bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
     }
 
------------------------------------Task D-----------------------------------
+-----------------------------------------------------Task D-------------------------------------------------------------
 D.  Add an “About” page to the application to describe your chosen customer’s company to web viewers and include
         navigation to and from the “About” page and the main screen.
+
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
         about.html {
             Whole page created from scratch.
@@ -42,8 +53,21 @@ D.  Add an “About” page to the application to describe your chosen customer�
             Fetches the store name from the database.
         }
 
------------------------------------Task E-----------------------------------
-E.
+-----------------------------------------------------Task E-------------------------------------------------------------
+E.  Add a sample inventory appropriate for your chosen store to the application. You should have five parts and five
+    products in your sample inventory and should not overwrite existing data in the database.
+
+        Note: Make sure the sample inventory is added only when both the part and product lists are empty.
+              When adding the sample inventory appropriate for the store, the inventory is stored in a set so
+              duplicate items cannot be added to your products. When duplicate items are added, make a
+              “multi-pack” part.
+
+        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+        On the Note: I made changes to the code to allow duplicate parts to be added to a product
+                     instead of adding a new part with the multi-pack label. Parts are added to a list,
+                     not a set.
+
 MainScreenController.java {
 Removed unused code.
 lines 2, 3, 4 - import org.springframework.beans.factory.annotation.Autowired;
