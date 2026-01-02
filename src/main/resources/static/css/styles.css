@@ -1,21 +1,45 @@
 body {
-    background: linear-gradient(rgba(245, 245, 220, 0.44)), linear-gradient(rgba(245, 245, 245, 0.24)), url("foodtruck.png");
+    background: linear-gradient(rgba(245, 245, 220, 0.44)), linear-gradient(rgba(245, 245, 245, 0.24)), url("Inventory food truck.png");
     background-size: cover;
     padding: 50px 50px 50px 50px;
 
 }
 
 .container {
-    background-color: rgba(255, 255, 255, 0.72);
-    border-radius: 25px;
+    background-color: rgba(255, 255, 255, 0.86);
+    border-radius: 2rem;
 }
-.jumbotron {
-    display: grid;
-    text-align: start;
-    grid-template-columns: auto;
-    grid-template-rows: 30% 70%;
-    padding: 5px;
+/* Button Colors */
+.btn-danger {
+    background-color: #4B5320;
+    border-color: #4B5320;
 }
-.container2 {
-    background-color: rgba(255, 255, 255, 0.92);
+.btn-primary {
+    background-color: #b1752b;
+    border-color: #b1752b;
+}
+.btn-success {
+    background-color: #e0b42e;
+    border-color: #e0b42e;
+}
+/* Table Header Colors */
+.table-dark {
+    --bs-table-bg: #707c30;
+}
+/* Margins */
+.mb-5 {
+    margin-bottom: 1rem!important;
+}
+
+.footer {
+    display: grid !important;
+    grid-template-columns: 30% 30% 30%;
+    justify-items: center;
+}
+.hero-section {
+    background-color: #343a40; /* Dark gray */
+    color: white;
+    padding: 3rem 1rem;
+    margin-bottom: 2rem;
+    border-radius: 0.5rem;
 }

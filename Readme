@@ -1,34 +1,56 @@
 -----------------------------------CHANGED-----------------------------------
+C.  Customize the HTML user interface for your customer’s application. The user interface
+should include the shop name, the product names, and the names of the parts.
+
 mainscreen.html {
-line 13 - Added a CSS link.
-line 15 - Changed the title text. (Store Inventory)
-line 20 to 23 - Added a div tag. Encapsulating the H2 and H1 tag.
-    H1 tag text became a variable.
-    H2 tag text just add context for the name of the business.
-line 25 - Changed the name from parts to Condiments. Since Im making a food truck inventory app.
-line 36, 72 - added another class to the table.
-line 93 - added an hr tag
-line 94 to 96 - added a link to the settings page
-line 97 - Wrote a text to play the role of company that creates technologies for food trucks
+line 3 to 10 - CLeaned up the header. Added a CSS link for my styles.css file.
+    Changed the title text. (Store Inventory)
+
+lines 11 to 13 - added classes to tags body and divs. Leveraging the bootstrap framework.
+
+line 15 to 21 - Added a div tag. Encapsulating the H2 and H1 tag.
+    H2 tag text became a variable. The store name can be changed and stored in the database.
+    H1 tag text just add context about the app itself. Used classes from bootstrap.
+
+line 23 to 39 - Added context messages to the page. For success and error confirmations. The first two are for
+    RedirectAttribute, after a successful or failed operation in the product or part forms, by doing this I got rid
+    of pages dedicated to success and error messages. The other two are for success or failed operations after clicking
+    the Buy Now button.
+
+line 74 - The column Price of the Parts table now shows numbers in dollar format.
+
+line 126, 134, 135 - Added a Labor Cost column to the products table. Labor Cost and Price columns show numbers in dollar format.
+
+line 164 to 179 - Added a footer tag. Containing the links to the Home page and the About page.
+    Also contains the link to the Settings page, which allows the store name to be changed.
+
+line 183 to 188 - Moved the script for the clear search button to this area. Also added a script tag to src
+    bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
 }
 
 MainScreenController.java {
+Removed unused code.
 lines 2, 3, 4 - import org.springframework.beans.factory.annotation.Autowired;
                 import com.example.demo.domain.UserEntity;
                 import com.example.demo.repositories.UserRepository;
 lines 31, 32 - @Autowired, added the UserRepository to the MainScreenController.
-lines 57 to 67 - added code to retrieve the store name from the database.
+lines 54 to 62 - added code to retrieve the store name from the database.
 }
 
 Part.java {
 line 31 to 34 - added two private integer field variables.
     min for minimum inventory and max for maximum inventory.
     Both got an annotation for validation, to make sure they are positive integers.
-line 44, 48, 49 - updated the constructor to set the variables.
-line 52, 57, 58 - updated the other constructor to set the variables.
-line 119 to 132 - added getters and setters for the variables.
+line 36, 37 - Made changes to the table, so the product table would be in control, to allow duplicate parts.
+line 42, 46, 47 - updated the constructor to set the variables.
+line 50, 55, 56 - updated the other constructor to set the variables.
+line 117 to 130 - added getters and setters for the variables.
 }
-
+Product.java {
+line 9, 10 - Switch imports, set and hashset, for arrays and list.
+lines 31 to 38 - Changed to List to allow duplicates. Added @JoinTable here so Product "Owns" the list.
+    added @OrderColumn(name = "parts_order"), because I was getting an error when trying to add a part to a product.1
+}
 AddInhousePartController.java {
 line 43 to 53 - added validation logic to make sure inventory, minimum and maximum behave as expected.
 }
@@ -36,6 +58,25 @@ InhousePartForm.html {
 line 11 to 34 - added context to the form inputs.
     Added inputs for min and max inventory.
 }
+AddProductController.java {
+Removed unused imports.
+added imports HashMap, Map
+lines 55 to 141 - Rewrite the logic in @PostMapping("/showFormAddProduct"). Coding to habilitate associating more than
+ one part per product. Fixing errors caused by the new logic. Like losing the association between the product and the
+ part. Added logic to verify there's enough inventory to add the product.
+
+lines 152 to 182 -  Rewrite the logic in @GetMapping("/showProductFormForUpdate"). Allowing all the parts to be shown.
+    Counting the associated parts per product to be shown.
+lines 206 to 259 - Rewrite @GetMapping("/associatepart") logic. Coding to habilitate associating more than
+    one part per product. Fixing errors caused by the new logic.
+lines 263 to 306 - Rewrite  @GetMapping("/removepart"). Had to do changes to fix logic errors, parts disappearing from
+ the available parts table.
+ }
+ productForm.html {
+lines 8 to 10 - added links to the css files.
+lines 13 to 18 - added a div tag to the h1 at the top of the page.
+    Erased the action attribute from the form tag, theres already a thymeleaf for that.
+ }
 
 -----------------------------------CREATED-----------------------------------
 
