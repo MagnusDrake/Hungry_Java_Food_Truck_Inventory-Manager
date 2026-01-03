@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ public class AddProductController {
     @Autowired
     private ApplicationContext context;
     private PartService partService;
-    private List<Part> theParts;
     private static Product product1;
     private Product product;
 
@@ -41,7 +41,7 @@ public class AddProductController {
         product1=product;
         theModel.addAttribute("product", product);
 
-        List<Part>availParts=new ArrayList<>();
+        List<Part> availParts = new ArrayList<>();
         for(Part p: partService.findAll()){
             if(!product.getParts().contains(p))availParts.add(p);
         }
@@ -51,102 +51,44 @@ public class AddProductController {
     }
 
     @PostMapping("/showFormAddProduct")
-    public String submitForm(@Valid @ModelAttribute("product") Product product, BindingResult bindingResult, Model theModel) {
+    public String submitForm(@Valid @ModelAttribute("product") Product product, BindingResult bindingResult,
+                             Model theModel, @RequestParam(value = "ignoreMin", required = false) boolean ignoreMin,
+                             RedirectAttributes theRa) {
 
-        // 1. Send the product back to the model immediately (in case of error)
         theModel.addAttribute("product", product);
 
-        // 2. Fetch the "Real" Product from DB to get the Parts List
-        ProductService repo = context.getBean(ProductServiceImpl.class);
-        Product productFromDB = repo.findById((int) product.getId());
+        // 1. Restore Parts if needed (Helper Method 1)
+        restorePartsList(product);
 
-        if (productFromDB != null) {
-            product.setParts(productFromDB.getParts());
-        }
+        // 2. Custom Logic: Check Stock (Helper Method 2)
+        // We pass 'bindingResult' so the helper can add the error message directly!
+        checkInventoryStock(product, bindingResult);
 
-        // 3. LOGIC CHECK: Do we have enough parts?
-
-        int productDelta = 0;
-        if (productFromDB != null) {
-            productDelta = product.getInv() - productFromDB.getInv();
-        } else {
-            productDelta = product.getInv(); // New product
-        }
-
-        if (productDelta > 0) {
-            PartService partService = context.getBean(PartServiceImpl.class);
-
-            // Count required parts
-            Map<Integer, Integer> partCounts = new HashMap<>();
-            for (Part p : product.getParts()) {
-                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
-            }
-
-            // Check stock for each part
-            for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
-                int partId = entry.getKey();
-                int qtyNeededPerProduct = entry.getValue();
-                int totalNeededForUpdate = productDelta * qtyNeededPerProduct;
-
-                Part p = partService.findById(partId);
-
-                if (p.getInv() < totalNeededForUpdate) {
-                    // FAILURE: Add error message and STOP
-                    bindingResult.rejectValue("inv", "error.inv",
-                            "Not enough stock! You need " + totalNeededForUpdate + " " + p.getName() +
-                                    "(s), but have " + p.getInv());
-                }
-            }
-        }
-
-        // 4. FINAL ERROR CHECK (Standard Validation + Stock Check)
+        // 3. Final Check
         if (bindingResult.hasErrors()) {
-            // RE-POPULATE THE MODEL
-            theModel.addAttribute("parts", context.getBean(PartServiceImpl.class).findAll());
-
-            List<Part> availParts = new ArrayList<>();
-            for (Part p : context.getBean(PartServiceImpl.class).findAll()) {
-                availParts.add(p);
-            }
-            theModel.addAttribute("availparts", availParts);
-
-            // Calculate counts for display again
-            Map<Part, Integer> partWithCounts = new HashMap<>();
-            for (Part p : product.getParts()) {
-                partWithCounts.put(p, partWithCounts.getOrDefault(p, 0) + 1);
-            }
-            theModel.addAttribute("assparts", partWithCounts.keySet());
-            theModel.addAttribute("partCounts", partWithCounts);
-
-            return "productForm"; // Go back to form with error message
+            // Helper Method 3: Prepare the model for the error page
+            setupModelForError(theModel, product);
+            return "productForm";
         }
 
-        // 5. SUCCESS: Deduct Inventory and Save
-        else {
-            PartService partService = context.getBean(PartServiceImpl.class);
+        if (!ignoreMin) {
+            List<String> stockWarnings = checkPartMinLevels(product);
+            if (!stockWarnings.isEmpty()) {
+                System.out.println("LOG: Stopped by Stock Warnings!");
+                // We found risks! Stop and show the form again.
+                theModel.addAttribute("stockWarnings", stockWarnings);
+                //Call helper to reload the lists (assparts/availparts)
+                setupModelForError(theModel, product);
 
-            // We already calculated Delta above, but let's redo the math to be safe
-            if (productDelta > 0) {
-                Map<Integer, Integer> partCounts = new HashMap<>();
-                for (Part p : product.getParts()) {
-                    partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
-                }
-
-                for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
-                    int partId = entry.getKey();
-                    int qtyNeededPerProduct = entry.getValue();
-
-                    Part p = partService.findById(partId);
-                    p.setInv(p.getInv() - (productDelta * qtyNeededPerProduct));
-                    partService.save(p);
-                }
+                return "productForm";
             }
-
-            repo.save(product);
-            return "confirmationaddproduct";
         }
+
+        // 4. Success: Save
+        saveProductAndInventory(product); // Helper Method 4
+        theRa.addFlashAttribute("message", "Successfully added product " + product.getName() + "!");
+        return "redirect:/mainscreen";
     }
-
     @GetMapping("/showProductFormForUpdate")
     public String showProductFormForUpdate(@RequestParam("productID") int theId, Model theModel) {
         // 1. Load Data
@@ -161,10 +103,7 @@ public class AddProductController {
 
         // 4. PREPARE AVAILABLE PARTS
         // Allow ALL parts to be shown, so a 2nd or 3rd copy of the same part may be added.
-        List<Part> availParts = new ArrayList<>();
-        for(Part p: partService.findAll()){
-            availParts.add(p);
-        }
+        List<Part> availParts = new ArrayList<>(partService.findAll());
         theModel.addAttribute("availparts", availParts);
 
 
@@ -184,7 +123,7 @@ public class AddProductController {
     }
 
     @GetMapping("/deleteproduct")
-    public String deleteProduct(@RequestParam("productID") int theId, Model theModel) {
+    public String deleteProduct(@RequestParam("productID") int theId, RedirectAttributes theRa) {
         ProductService productService = context.getBean(ProductServiceImpl.class);
         Product product2=productService.findById(theId);
         for(Part part:product2.getParts()){
@@ -195,7 +134,9 @@ public class AddProductController {
         productService.save(product2);
         productService.deleteById(theId);
 
-        return "confirmationdeleteproduct";
+        theRa.addFlashAttribute("message", "Successfully deleted product " + product2.getName() + "!");
+
+        return "redirect:/mainscreen";
     }
 
     public AddProductController(PartService partService) {
@@ -206,6 +147,7 @@ public class AddProductController {
     @GetMapping("/associatepart")
     public String associatePart(@Valid @RequestParam("partID") int theID,
                                 @RequestParam("amount") int amount,
+                                @RequestParam(value = "open", required = false) String open,
                                 Model theModel){
 
         // 1. Safety Check: If app restarted, go back to main screen
@@ -227,7 +169,7 @@ public class AddProductController {
         Part thePart = partService.findById(theID);
 
         // 5. Add the Part (Loop for duplicates)
-        for (int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; ++i) {
             productToSave.getParts().add(thePart);
         }
 
@@ -241,10 +183,7 @@ public class AddProductController {
         theModel.addAttribute("product", product1);
 
         // Show ALL parts (Can add duplicates)
-        List<Part> availParts = new ArrayList<>();
-        for (Part p : partService.findAll()) {
-            availParts.add(p);
-        }
+        List<Part> availParts = new ArrayList<>(partService.findAll());
         theModel.addAttribute("availparts", availParts);
 
         // Count the parts for display
@@ -255,6 +194,9 @@ public class AddProductController {
 
         theModel.addAttribute("assparts", partWithCounts.keySet());
         theModel.addAttribute("partCounts", partWithCounts);
+        if (open != null) {
+            theModel.addAttribute("open", true);
+        }
 
         return "productForm";
     }
@@ -290,10 +232,7 @@ public class AddProductController {
         theModel.addAttribute("product", product1);
 
         // Show ALL Parts (Don't hide the part)
-        List<Part> availParts = new ArrayList<>();
-        for (Part p : partService.findAll()) {
-            availParts.add(p);
-        }
+        List<Part> availParts = new ArrayList<>(partService.findAll());
         theModel.addAttribute("availparts", availParts);
 
         // Count the parts
@@ -305,5 +244,162 @@ public class AddProductController {
         theModel.addAttribute("partCounts", partWithCounts);
 
         return "productForm";
+    }
+    //Helper Methods!!!
+
+    // Helper to check if we have enough parts
+    private void checkInventoryStock(Product product, BindingResult bindingResult) {
+        // If basic validation failed, don't bother checking complex stock logic
+        if (bindingResult.hasErrors()) return;
+
+        ProductService repo = context.getBean(ProductServiceImpl.class);
+        Product productFromDB = (product.getId() != 0) ? repo.findById((int)product.getId()) : null;
+
+        int productDelta = 0;
+        if (productFromDB != null) {
+            productDelta = product.getInv() - productFromDB.getInv();
+        } else {
+            productDelta = product.getInv();
+        }
+
+        // Only check if inventory is increasing
+        if (productDelta > 0 && product.getParts() != null) {
+            PartService partService = context.getBean(PartServiceImpl.class);
+
+            // Count required parts
+            Map<Integer, Integer> partCounts = new HashMap<>();
+            for (Part p : product.getParts()) {
+                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
+            }
+
+            // Compare against DB
+            for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
+                Part p = partService.findById(entry.getKey());
+                int totalNeeded = productDelta * entry.getValue();
+
+                if (p.getInv() < totalNeeded) {
+                    // Add the error directly to the binding result
+                    bindingResult.rejectValue("inv", "error.inv",
+                            "Not enough stock! You need " + totalNeeded + " " + p.getName() +
+                                    "(s), but only have " + p.getInv());
+                }
+            }
+        }
+    }
+    private void restorePartsList(Product product) {
+        // Only look up if ID is not 0 (Prevent "Product #0 not found" crash)
+        if (product.getId() != 0) {
+            try {
+                ProductService repo = context.getBean(ProductServiceImpl.class);
+                Product productFromDB = repo.findById((int) product.getId());
+
+                // If the form didn't send parts (because it's an update), keep the old ones
+                if (productFromDB != null && (product.getParts() == null || product.getParts().isEmpty())) {
+                    product.setParts(productFromDB.getParts());
+                }
+            } catch (Exception e) {
+                // If lookup fails, just treat it as a new product
+            }
+        }
+    }
+    private void setupModelForError(Model theModel, Product product) {
+        PartService partService = context.getBean(PartServiceImpl.class);
+
+        // 1. Available Parts (Top Table)
+        List<Part> availParts = new ArrayList<>();
+        for (Part p : partService.findAll()) {
+            availParts.add(p);
+        }
+        theModel.addAttribute("availparts", availParts);
+        theModel.addAttribute("parts", partService.findAll());
+
+        // 2. Associated Parts (Bottom Table)
+        // Count manually to handle the duplicates correctly
+        Map<Part, Integer> partWithCounts = new HashMap<>();
+        if (product.getParts() != null) {
+            for (Part p : product.getParts()) {
+                partWithCounts.put(p, partWithCounts.getOrDefault(p, 0) + 1);
+            }
+        }
+
+        theModel.addAttribute("assparts", partWithCounts.keySet());
+        theModel.addAttribute("partCounts", partWithCounts);
+    }
+    private void saveProductAndInventory(Product product) {
+        ProductService repo = context.getBean(ProductServiceImpl.class);
+        PartService partService = context.getBean(PartServiceImpl.class);
+
+        // 1. Calculate the Inventory Change (Delta)
+        int productDelta = 0;
+        if (product.getId() != 0) {
+            // Existing Product: Compare New vs Old
+            Product productFromDB = repo.findById((int) product.getId());
+            if (productFromDB != null) {
+                productDelta = product.getInv() - productFromDB.getInv();
+            }
+        } else {
+            // New Product: The whole inventory is new
+            productDelta = product.getInv();
+        }
+
+        // 2. Deduct Stock (Only if inventory increased)
+        if (productDelta > 0 && product.getParts() != null) {
+            // Count how many of each part is needed per product
+            Map<Integer, Integer> partCounts = new HashMap<>();
+            for (Part p : product.getParts()) {
+                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
+            }
+
+            // Loop through and update each part
+            for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
+                int partId = entry.getKey();
+                int qtyNeededPerProduct = entry.getValue();
+
+                Part p = partService.findById(partId);
+                int totalDeduction = productDelta * qtyNeededPerProduct;
+
+                p.setInv(p.getInv() - totalDeduction);
+                partService.save(p);
+            }
+        }
+
+        // 3. Finally, Save the Product
+        repo.save(product);
+    }
+    private List<String> checkPartMinLevels(Product product) {
+        List<String> warnings = new ArrayList<>();
+
+        // We need the old product to calculate the difference (Delta)
+        ProductService repo = context.getBean(ProductServiceImpl.class);
+        Product productFromDB = (product.getId() != 0) ? repo.findById((int)product.getId()) : null;
+
+        int productDelta = product.getInv();
+        if (productFromDB != null) {
+            productDelta -= productFromDB.getInv();
+        }
+
+        // Only care if we are INCREASING inventory (building stuff)
+        if (productDelta > 0 && product.getParts() != null) {
+            PartService partService = context.getBean(PartServiceImpl.class);
+
+            // Count parts needed
+            Map<Integer, Integer> partCounts = new HashMap<>();
+            for (Part p : product.getParts()) {
+                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
+            }
+
+            for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
+                Part p = partService.findById(entry.getKey());
+                int amountNeeded = productDelta * entry.getValue();
+                int predictedInventory = p.getInv() - amountNeeded;
+
+                // THE CHECK: Will it fall below Min?
+                if (predictedInventory < p.getMin()) {
+                    warnings.add("Part '" + p.getName() + "' will fall below minimum! (Current: "
+                            + p.getInv() + ", After: " + predictedInventory + ", Min: " + p.getMin() + ")");
+                }
+            }
+        }
+        return warnings;
     }
 }
