@@ -3,66 +3,66 @@ package com.example.demo.controllers;
 import com.example.demo.domain.InhousePart;
 import com.example.demo.domain.OutsourcedPart;
 import com.example.demo.domain.Part;
-import com.example.demo.repositories.PartRepository;
 import com.example.demo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 import java.util.List;
 
-/**
- *
- *
- *
- *
- */
 @Controller
 public class AddPartController {
     @Autowired
     private ApplicationContext context;
 
     @GetMapping("/showPartFormForUpdate")
-    public String showPartFormForUpdate(@RequestParam("partID") int theId,Model theModel){
+    public String showPartFormForUpdate(@RequestParam("partID") int theId, Model theModel){
 
-        PartService repo=context.getBean(PartServiceImpl.class);
-        OutsourcedPartService outsourcedrepo=context.getBean(OutsourcedPartServiceImpl.class);
-        InhousePartService inhouserepo=context.getBean(InhousePartServiceImpl.class);
+        PartService repo = context.getBean(PartServiceImpl.class);
+        OutsourcedPartService outsourcedrepo = context.getBean(OutsourcedPartServiceImpl.class);
+        InhousePartService inhouserepo = context.getBean(InhousePartServiceImpl.class);
 
-        boolean inhouse=true;
-        List<OutsourcedPart> outsourcedParts=outsourcedrepo.findAll();
-        for(OutsourcedPart outsourcedPart:outsourcedParts) {
-            if(outsourcedPart.getId()==theId)inhouse=false;
+        boolean inhouse = true;
+        List<OutsourcedPart> outsourcedParts = outsourcedrepo.findAll();
+        for(OutsourcedPart outsourcedPart : outsourcedParts) {
+            if(outsourcedPart.getId() == theId) inhouse = false;
         }
         String formtype;
         if(inhouse){
-            InhousePart inhousePart=inhouserepo.findById(theId);
-            theModel.addAttribute("inhousepart",inhousePart);
-            formtype="InhousePartForm";
+            InhousePart inhousePart = inhouserepo.findById(theId);
+            // --- FIX 1: Change "inhousepart" to "part" ---
+            theModel.addAttribute("part", inhousePart);
+
+            formtype = "InhousePartForm";
         }
         else{
-            OutsourcedPart outsourcedPart=outsourcedrepo.findById(theId);
-            theModel.addAttribute("outsourcedpart",outsourcedPart);
-            formtype="OutsourcedPartForm";
+            OutsourcedPart outsourcedPart = outsourcedrepo.findById(theId);
+            // --- FIX 2: Change "outsourcedpart" to "part" ---
+            theModel.addAttribute("part", outsourcedPart);
+
+            formtype = "OutsourcedPartForm";
         }
         return formtype;
     }
 
     @GetMapping("/deletepart")
-    public String deletePart(@Valid @RequestParam("partID") int theId,  Model theModel){
+    public String deletePart(@Valid @RequestParam("partID") int theId, RedirectAttributes theRa){
+
         PartService repo = context.getBean(PartServiceImpl.class);
-        Part part=repo.findById(theId);
+        Part part = repo.findById(theId);
+
         if(part.getProducts().isEmpty()){
             repo.deleteById(theId);
-            return "confirmationdeletepart";
+            theRa.addFlashAttribute("message", "Successfully deleted " + part.getName() + "!");
         }
         else{
-            return "negativeerror";
+            theRa.addFlashAttribute("error", "Critical error, can't delete " + part.getName()
+                    + ", while being associated with a product.");
         }
+        return "redirect:/mainscreen";
     }
-
 }
