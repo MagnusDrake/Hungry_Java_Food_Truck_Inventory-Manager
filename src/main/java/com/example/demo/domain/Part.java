@@ -4,6 +4,7 @@ import com.example.demo.validators.ValidDeletePart;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,12 +23,13 @@ import java.util.Set;
 public abstract class Part implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    long id;
-    String name;
+    private long id;
+    @NotBlank(message = "Part name is required")
+    private String name;
     @Min(value = 0, message = "Price value must be positive")
-    double price;
+    private double price;
     @Min(value = 0, message = "Inventory value must be positive")
-    int inv;
+    private int inv;
     @Min(value = 0, message = "Minimum inventory value must be positive")
     private int min;
     @Min(value = 0, message = "Maximum inventory value must be positive")
@@ -57,42 +59,52 @@ public abstract class Part implements Serializable {
     }
 
     public long getId() {
+
         return id;
     }
 
     public void setId(long id) {
+
         this.id = id;
     }
 
     public String getName() {
+
         return name;
     }
 
     public void setName(String name) {
+
         this.name = name;
     }
 
     public double getPrice() {
+
         return price;
     }
 
     public void setPrice(double price) {
+
         this.price = price;
     }
 
     public int getInv() {
+
         return inv;
     }
 
     public void setInv(int inv) {
+
         this.inv = inv;
     }
 
     public Set<Product> getProducts() {
+
         return products;
     }
 
     public void setProducts(Set<Product> products) {
+
         this.products = products;
     }
 
@@ -111,21 +123,26 @@ public abstract class Part implements Serializable {
 
     @Override
     public int hashCode() {
-        return (int) (id ^ (id >>> 32));
+
+        return Long.hashCode(id);
     }
 
     public int getMax() {
+
         return max;
     }
 
     public void setMax(int max) {
+
         this.max = max;
     }
     public int getMin() {
+
         return min;
     }
 
     public void setMin(int min) {
+
         this.min = min;
     }
 }

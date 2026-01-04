@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.domain.Part;
 import com.example.demo.domain.Product;
+import com.example.demo.repositories.ProductRepository;
 import com.example.demo.service.PartService;
 import com.example.demo.service.PartServiceImpl;
 import com.example.demo.service.ProductService;
@@ -33,6 +34,8 @@ public class AddProductController {
     private PartService partService;
     private static Product product1;
     private Product product;
+    @Autowired
+    private ProductRepository productRepository;
 
     @GetMapping("/showFormAddProduct")
     public String showFormAddPart(Model theModel) {
@@ -89,6 +92,7 @@ public class AddProductController {
         theRa.addFlashAttribute("message", "Successfully added product " + product.getName() + "!");
         return "redirect:/mainscreen";
     }
+
     @GetMapping("/showProductFormForUpdate")
     public String showProductFormForUpdate(@RequestParam("productID") int theId, Model theModel) {
         // 1. Load Data
@@ -142,7 +146,7 @@ public class AddProductController {
     public AddProductController(PartService partService) {
         this.partService = partService;
     }
-// make the add and remove buttons work
+    // make the add and remove buttons work
 
     @GetMapping("/associatepart")
     public String associatePart(@Valid @RequestParam("partID") int theID,
@@ -249,6 +253,15 @@ public class AddProductController {
 
     // Helper to check if we have enough parts
     private void checkInventoryStock(Product product, BindingResult bindingResult) {
+
+        Product existingPart = productRepository.findByName(product.getName());
+
+        // If found, and it's different ID (checking for updates vs. new)
+        if (existingPart != null && existingPart.getId() != product.getId()) {
+            bindingResult.rejectValue("name", "error.name",
+                    "Name already exists in inventory! Try a different name or add multi-pack to name");
+        }
+
         // If basic validation failed, don't bother checking complex stock logic
         if (bindingResult.hasErrors()) return;
 
