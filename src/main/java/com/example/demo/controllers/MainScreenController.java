@@ -66,13 +66,14 @@ public class MainScreenController { // Fixed double 'r' typo
     }
     // --- Private Helper Methods ---
     /**
-     * Extracts the name of the first user in the DB to display as store owner.
+     * Extracts the name of the first user in the DB to display as a store owner.
      */
     private String fetchStoreOwnerName() {
         List<UserEntity> allUsers = userRepository.findAll();
         if (allUsers.isEmpty()) {
             return "No User Found";
-        } else {
+        }
+        else {
             return allUsers.get(0).getName();
         }
     }
