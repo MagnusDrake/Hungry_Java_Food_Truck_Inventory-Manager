@@ -1,32 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="https://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Part Form</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ingredient Details - Wholesale</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
-<body>
-<h1>Outsourced Part Detail</h1>
+<body class="bg-light">
 
-<form action="#" th:action="@{/showFormAddOutPart}" th:object="${outsourcedpart}" method="POST"}>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
 
-<!-- Add hidden form field to handle update -->
-    <p><input type="hidden" th:field="*{id}"/></p>
+                <div class="card-header bg-white py-3">
+                    <h3 class="mb-0 text-secondary">Ingredient Details</h3>
+                </div>
 
-<p><input type="text" th:field="*{name}" placeholder="Name" class="form-control mb-4 col-4"/></p>
+                <div class="card-body">
+                    <form th:action="@{/showFormAddOutPart}" th:object="${part}" method="POST">
 
-<p><input type="text" th:field="*{price}" placeholder= "Price" class="form-control mb-4 col-4"/></p>
-    <p th:if="${#fields.hasErrors('price')}" th:errors="*{price}">Price Error</p>
+                        <input type="hidden" th:field="*{id}"/>
 
-<p><input type="text" th:field="*{inv}" placeholder="Inventory" class="form-control mb-4 col-4"/></p>
-    <p th:if="${#fields.hasErrors('inv')}" th:errors="*{inv}">Inventory Error</p>
+                        <div class="mb-4 text-center">
+                            <div class="btn-group w-50" role="group" aria-label="Source Type">
 
-    <p><input type="text" th:field="*{companyName}" placeholder="Company Name" class="form-control mb-4 col-4"/></p>
+                                <input type="radio" class="btn-check" name="partType" id="localRadio"
+                                       onclick="window.location.href='showFormAddInPart'">
+                                <label class="btn btn-outline-primary" for="localRadio">Locally Sourced</label>
 
-<p><input type="submit" value="Submit" /></p>
-</form>
-<a href="http://localhost:8080/">Link
-    to Main Screen</a>
+                                <input type="radio" class="btn-check" name="partType" id="wholesaleRadio" checked>
+                                <label class="btn btn-primary" for="wholesaleRadio">Wholesale</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ingredient Name</label>
+                            <input type="text" th:field="*{name}" class="form-control" placeholder="e.g. Tomatoes"
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''"/>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Price / Unit</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" th:field="*{price}" class="form-control" placeholder="0.00"
+                                           th:classappend="${#fields.hasErrors('price')} ? 'is-invalid' : ''"/>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Inventory</label>
+                                <input type="number" th:field="*{inv}" class="form-control" placeholder="0"
+                                       th:classappend="${#fields.hasErrors('inv')} ? 'is-invalid' : ''"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('inv')}" th:errors="*{inv}"></div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Minimum</label>
+                                <input type="number" th:field="*{min}" class="form-control" placeholder="0"
+                                       th:classappend="${#fields.hasErrors('min')} ? 'is-invalid' : ''"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('min')}" th:errors="*{min}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Maximum</label>
+                                <input type="number" th:field="*{max}" class="form-control" placeholder="100"
+                                       th:classappend="${#fields.hasErrors('max')} ? 'is-invalid' : ''"/>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('max')}" th:errors="*{max}"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Distributor Name</label>
+                            <input type="text" th:field="*{companyName}" class="form-control" placeholder="Vendor Name"
+                                   th:classappend="${#fields.hasErrors('companyName')} ? 'is-invalid' : ''"/>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('companyName')}" th:errors="*{companyName}"></div>
+                        </div>
+
+                        <div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger">
+                            <ul class="mb-0 ps-3">
+                                <li th:each="err: ${#fields.allErrors()}" th:text="${err}"></li>
+                            </ul>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a th:href="@{/mainscreen}" class="btn btn-outline-secondary">Cancel</a>
+                            <input type="submit" value="Save Ingredient" class="btn btn-primary px-4" />
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+    <footer class="footer justify-content-between align-items-center mb-5">
+        <span style="justify-self: start" class="text-muted small">© 2026 The Hungry Java Food Truck Technologies.</span>
+
+        <nav>
+            <span><a class="text-decoration-none text-secondary fw-bold" th:href="@{/mainscreen}">Home</a></span>
+            <span class="text-muted mx-2">|</span>
+            <span><a class="text-decoration-none text-secondary fw-bold" th:href="@{/about}">About</a></span>
+        </nav>
+
+        <a style="justify-self: end" th:href="@{/settings}" class="btn btn-outline-secondary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill me-1" viewBox="0 0 16 16">
+                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.86z"/>
+            </svg>
+            Change Store Name
+        </a>
+    </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
