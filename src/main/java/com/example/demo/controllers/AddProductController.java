@@ -267,10 +267,7 @@ public class AddProductController {
             PartService partService = context.getBean(PartServiceImpl.class);
 
             // Count required parts
-            Map<Integer, Integer> partCounts = new HashMap<>();
-            for (Part p : product.getParts()) {
-                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
-            }
+            Map<Integer, Integer> partCounts = new HashMap<>(getPartCounts(product));
 
             // Compare against DB
             for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
@@ -332,7 +329,7 @@ public class AddProductController {
         // 1. Calculate the Inventory Change (Delta)
         int productDelta = 0;
         if (product.getId() != 0) {
-            // Existing Product: Compare New vs Old
+            // Existing Product: Compare New vs. Old
             Product productFromDB = repo.findById((int) product.getId());
             if (productFromDB != null) {
                 productDelta = product.getInv() - productFromDB.getInv();
@@ -344,11 +341,8 @@ public class AddProductController {
 
         // 2. Deduct Stock (Only if inventory increased)
         if (productDelta > 0 && product.getParts() != null) {
-            // Count how many of each part is needed per product
-            Map<Integer, Integer> partCounts = new HashMap<>();
-            for (Part p : product.getParts()) {
-                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
-            }
+            // Count how many of each part are needed per product
+            Map<Integer, Integer> partCounts = new HashMap<>(getPartCounts(product));
 
             // Loop through and update each part
             for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
@@ -383,10 +377,7 @@ public class AddProductController {
             PartService partService = context.getBean(PartServiceImpl.class);
 
             // Count parts needed
-            Map<Integer, Integer> partCounts = new HashMap<>();
-            for (Part p : product.getParts()) {
-                partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
-            }
+            Map<Integer, Integer> partCounts = new HashMap<>(getPartCounts(product));
 
             for (Map.Entry<Integer, Integer> entry : partCounts.entrySet()) {
                 Part p = partService.findById(entry.getKey());
@@ -401,5 +392,12 @@ public class AddProductController {
             }
         }
         return warnings;
+    }
+    private Map<Integer, Integer> getPartCounts(Product product) {
+        Map<Integer, Integer> partCounts = new HashMap<>();
+        for (Part p : product.getParts()) {
+            partCounts.put((int)p.getId(), partCounts.getOrDefault((int)p.getId(), 0) + 1);
+        }
+        return partCounts;
     }
 }

@@ -3,6 +3,7 @@ C. Customize the HTML user interface for your customer’s application. The user
     shop name, the product names, and the names of the parts.
 
     mainscreen.html {
+
         line 3 to 10 - CLeaned up the header. Added a CSS link for my styles.css file.
             Changed the title text. (Store Inventory)
 
@@ -35,6 +36,29 @@ C. Customize the HTML user interface for your customer’s application. The user
         line 192 to 197 - Moved the script for the clear search button to this area. Also added a script tag to src
             bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
     }
+    MainScreenController.java {
+
+        Corrected spelling mistake in MainScreenController, it had two r's.
+        Removed unused imports and code.
+
+        lines 6, 7, 13 - Added imports:
+                         import com.example.demo.domain.UserEntity;
+                         import com.example.demo.repositories.UserRepository;
+                         import org.springframework.web.bind.annotation.RequestParam;
+
+        lines 21 to 23 -Defined dependencies as final, added the userRepository.
+
+        lines 26 to 30 - Added a new parameter to the constructor. userRepository.
+
+        lines 32 to 51 - Organized the code inside @GetMapping("/mainscreen").
+
+        line 48 - Added the code to retrieve the store name from the database, using a helper method.
+
+        line 53 to 66 - Added @GetMapping("/buyproduct") logic. After a successful or failed purchase, redirects to the
+                    main screen with a success or error message.
+
+        lines 71 to 78 - Private Helper Method to retrieve the store name from the database.
+    }
 
 -----------------------------------------------------Task D-------------------------------------------------------------
 D.  Add an “About” page to the application to describe your chosen customer’s company to web viewers and include
@@ -50,7 +74,7 @@ D.  Add an “About” page to the application to describe your chosen customer�
         AboutController.java {
             Whole class created from scratch.
             @GetMapping("/about") - Added the route to the page.
-            Fetches the store name from the database.
+            Private Helper Method to fetch the store name from the database.
         }
 
 -----------------------------------------------------Task E-------------------------------------------------------------
@@ -68,14 +92,65 @@ E.  Add a sample inventory appropriate for your chosen store to the application.
                      instead of adding a new part with the multi-pack label. Parts are added to a list,
                      not a set.
 
-MainScreenController.java {
-Removed unused code.
-lines 2, 3, 4 - import org.springframework.beans.factory.annotation.Autowired;
-                import com.example.demo.domain.UserEntity;
-                import com.example.demo.repositories.UserRepository;
-lines 31, 32 - @Autowired, added the UserRepository to the MainScreenController.
-lines 54 to 62 - added code to retrieve the store name from the database.
-}
+    AddPartController.java {
+        Removed unused imports.
+
+        line 12 - Added import RedirectAttributes.
+
+        lines 38, 45 - Changed the name of the model attribute to part. Was planning on using only one page to enter the
+                       part data, but I decided to keep the two pages at the end. Stayed withe the change on the
+                       controller.
+        lines 60, 63, 64 - Removed the pages for delete part success or error, and just redirected to the main screen,
+                           after a successful or failed operation, with a flash message.
+    }
+
+    AddProductController.java {
+        Removed unused imports.
+
+        line 15 - Added import RedirectAttributes.
+
+        lines 53 to 91 - Rewrite the logic in @PostMapping("/showFormAddProduct"). Coding to habilitate associating
+                         more than one of the same part per product. Fixing errors caused by the new logic. Like losing the
+                         association between the product and the part. Added logic to verify there's enough inventory
+                         to add the product. Refactored the code into private helper methods, to keep the controller
+                         clean. Added a flash message to show the success or error of the operation, after redirecting to
+                         the main screen.
+
+        lines 152 to 182 -  Rewrite the logic in @GetMapping("/showProductFormForUpdate"). Allowing all the parts to be shown.
+                            Counting the associated parts per product to be shown.
+
+        lines 126, 137, 138 - Removed the page for delete product success. Added a flash message to show the success of
+                              the operation, using the RedirectAttributes.
+
+        lines 147 to 202 - Rewrite @GetMapping("/associatepart") logic. Coding to habilitate associating more than
+                           one part per product. Fixing errors caused by the new logic.
+
+        lines 204 to 247 - Rewrite  @GetMapping("/removepart"). Had to do changes to fix logic errors, parts disappearing from
+                           the available parts table.
+
+        lines 251 to 403 - Helper methods to enhance readability and reusability.
+            checkInventoryStock: It checks inventory levels to make sure after adding the product the inventory for the
+                                 associated parts is not going to fall below zero. If it does, returns a binding result.
+
+            restorePartsList: Deals with the problem I was getting into, where adding a product to inventory would
+                              disassociate the parts already associated. Also makes sure if is a new part it would not
+                              look in the database for parts, which was causing the program to crash.
+
+            setupModelForError: This takes care of sending the information back to the page in case an error happens. I
+                                was having issues where everytime an error happen tha app would crash.
+
+            saveProductAndInventory: This just saves the product and inventory. Checks if there are changes on the
+                                     inventory amount and takes care of reducing the parts by the specific amount.
+
+            checkPartMinLevels: This checks minimum value associated with each part. If a product was to be added, and a
+                                part associated was to fall below that minimum threshold, a message is sent back to the
+                                user to make a choice, by acceding to the risk of making this new product while the part
+                                falls below the minimum amount set.
+
+            getPartCounts: This method returns a map with the part name as key and the amount of parts associated as a
+                           value.
+     }
+
 
 Part.java {
 line 31 to 34 - added two private integer field variables.
@@ -98,20 +173,7 @@ InhousePartForm.html {
 line 11 to 34 - added context to the form inputs.
     Added inputs for min and max inventory.
 }
-AddProductController.java {
-Removed unused imports.
-added imports HashMap, Map
-lines 55 to 141 - Rewrite the logic in @PostMapping("/showFormAddProduct"). Coding to habilitate associating more than
- one part per product. Fixing errors caused by the new logic. Like losing the association between the product and the
- part. Added logic to verify there's enough inventory to add the product.
 
-lines 152 to 182 -  Rewrite the logic in @GetMapping("/showProductFormForUpdate"). Allowing all the parts to be shown.
-    Counting the associated parts per product to be shown.
-lines 206 to 259 - Rewrite @GetMapping("/associatepart") logic. Coding to habilitate associating more than
-    one part per product. Fixing errors caused by the new logic.
-lines 263 to 306 - Rewrite  @GetMapping("/removepart"). Had to do changes to fix logic errors, parts disappearing from
- the available parts table.
- }
  productForm.html {
 lines 8 to 10 - added links to the css files.
 lines 13 to 18 - added a div tag to the h1 at the top of the page.
