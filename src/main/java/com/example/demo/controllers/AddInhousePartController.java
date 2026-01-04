@@ -57,7 +57,7 @@ public class AddInhousePartController{
         }
     }
 
-    private BindingResult inventoryCheck(Part part, BindingResult theBindingResult) {
+    private void inventoryCheck(Part part, BindingResult theBindingResult) {
 
         // CHECK 1: Is Max less than Min?
         if (part.getMax() < part.getMin()) {
@@ -81,8 +81,5 @@ public class AddInhousePartController{
             theBindingResult.rejectValue("name", "error.name",
                     "Name already exists in inventory! Try a different name, ex. " + part.getName() + " multi-pack.");
         }
-
-        return theBindingResult;
     }
-
 }
