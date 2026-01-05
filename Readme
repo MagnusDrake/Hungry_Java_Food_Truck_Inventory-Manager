@@ -428,7 +428,16 @@ H. Add validation for between or at the maximum and minimum fields. The validati
     }
 
 -----------------------------------------------------Task I-------------------------------------------------------------
-I.
+I. Add at least two unit tests for the maximum and minimum fields to the PartTest class in the test package
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+    PartTest.java {
+
+        lines 168 to 186 - Added tests for the minimum and maximum inventory levels.
+
+    }
+
 
 -----------------------------------CREATED-----------------------------------
 

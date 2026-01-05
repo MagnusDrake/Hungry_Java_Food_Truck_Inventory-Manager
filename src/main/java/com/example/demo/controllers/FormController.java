@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class FormController {
@@ -26,7 +27,7 @@ public class FormController {
 
     // 2. Handle the submit
     @PostMapping("/save-name")
-    public String saveName(@ModelAttribute NameForm nameFormData, Model model) {
+    public String saveName(@ModelAttribute NameForm nameFormData, RedirectAttributes theRa) {
         userRepository.deleteAll();
 
         // The 'nameFormData' now contains what the user typed!
@@ -35,8 +36,7 @@ public class FormController {
 
         // 2. SAVE IT! (This writes to the DB)
         userRepository.save(newUser);
-
-
+        theRa.addFlashAttribute("message", "Food Truck named " + nameFormData.getUserName() + " successfully saved!");
         return "redirect:/mainscreen";
     }
 }
