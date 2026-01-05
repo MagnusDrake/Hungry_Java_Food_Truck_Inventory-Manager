@@ -439,7 +439,7 @@ I. Add at least two unit tests for the maximum and minimum fields to the PartTes
     }
 
 
------------------------------------CREATED-----------------------------------
+-----------------------------------------------------CREATED------------------------------------------------------------
 
 styles.css - renamed the css file in the css folder. added data to the file.
 Settings.html - added to be able to remotely set the store Name.
