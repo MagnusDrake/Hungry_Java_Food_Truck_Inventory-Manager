@@ -1,6 +1,9 @@
------------------------------------------------------Task C-------------------------------------------------------------
-C. Customize the HTML user interface for your customer’s application. The user interface should include the
-    shop name, the product names, and the names of the parts.
+**------------------------------------------------------Task C-------------------------------------------------------------**
+
+**C. Customize the HTML user interface for your customer’s application. The user interface should include the
+    shop name, the product names, and the names of the parts.**
+
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
     mainscreen.html {
 
@@ -38,6 +41,7 @@ C. Customize the HTML user interface for your customer’s application. The user
                           bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23
                           to 39.
     }
+
     MainScreenController.java {
 
         Corrected spelling mistake in MainScreenController, it had two r's.
@@ -62,11 +66,12 @@ C. Customize the HTML user interface for your customer’s application. The user
         lines 71 to 79 - Private Helper Method to retrieve the store name from the database.
     }
 
------------------------------------------------------Task D-------------------------------------------------------------
-D.  Add an “About” page to the application to describe your chosen customer’s company to web viewers and include
-        navigation to and from the “About” page and the main screen.
+**-----------------------------------------------------Task D-------------------------------------------------------------**
 
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+**D. Add an “About” page to the application to describe your chosen customer’s company to web viewers and include
+        navigation to and from the “About” page and the main screen.**
+
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
         about.html {
             Whole page created from scratch.
@@ -78,16 +83,17 @@ D.  Add an “About” page to the application to describe your chosen customer�
             Private Helper Method to fetch the store name from the database.
         }
 
------------------------------------------------------Task E-------------------------------------------------------------
-E.  Add a sample inventory appropriate for your chosen store to the application. You should have five parts and five
-    products in your sample inventory and should not overwrite existing data in the database.
+**-----------------------------------------------------Task E-------------------------------------------------------------**
+
+**E. Add a sample inventory appropriate for your chosen store to the application. You should have five parts and five
+    products in your sample inventory and should not overwrite existing data in the database.**
 
         Note: Make sure the sample inventory is added only when both the part and product lists are empty.
               When adding the sample inventory appropriate for the store, the inventory is stored in a set so
               duplicate items cannot be added to your products. When duplicate items are added, make a
               “multi-pack” part.
 
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
         On the Note: I made changes to the code to allow duplicate parts to be added to a product
                      instead of adding a new part with the multi-pack label. Parts are added to a list,
@@ -242,40 +248,42 @@ E.  Add a sample inventory appropriate for your chosen store to the application.
 
     }
 
------------------------------------------------------Task F-------------------------------------------------------------
-F. Add a “Buy Now” button to your product list. Your “Buy Now” button must meet each of the following parameters:
+**-----------------------------------------------------Task F-------------------------------------------------------------**
+
+**F. Add a “Buy Now” button to your product list. Your “Buy Now” button must meet each of the following parameters:**
 
     • The “Buy Now” button must be next to the buttons that update and delete products.
     • The button should decrement the inventory of that product by one. It should not affect the inventory of any of the
       associated parts.
     • Display a message that indicates the success or failure of a purchase.
 
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
     mainscreen.html {
 
-            line 23 to 39 - Added context messages to the page. For success and error confirmations. The first two are for
-                RedirectAttribute, after a successful or failed operation in the product or part forms. The other two are
-                for success or failed operations after clicking the Buy Now button.By doing this I got rid of the pages
-                dedicated to success and error messages.
+        line 23 to 39 - Added context messages to the page. For success and error confirmations. The first two are for
+                        RedirectAttribute, after a successful or failed operation in the product or part forms. The other two are
+                        for success or failed operations after clicking the Buy Now button.By doing this I got rid of the pages
+                        dedicated to success and error messages.
 
-            line 144 to 145 - Added Buy Now button to the products table.
+        line 144 to 145 - Added Buy Now button to the products table.
 
-            line 192 to 197 - Moved the script for the clear search button to this area. Also added a script tag to src
-                bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
+        line 192 to 197 - Moved the script for the clear search button to this area. Also added a script tag to src
+                            bootstrap.bundle.min.js. to be able to close the success and error messages added on lines 23 to 39.
 
-        }
+    }
 
-        MainScreenController.java {
+    MainScreenController.java {
 
-            line 53 to 66 - Added @GetMapping("/buyproduct") logic. It looks up the product by ID. Verifies that there's
-                            enough inventory, and after a successful or failed purchase, redirects to the main screen
-                            with a success or error message.
+        line 53 to 66 - Added @GetMapping("/buyproduct") logic. It looks up the product by ID. Verifies that there's
+                        enough inventory, and after a successful or failed purchase, redirects to the main screen
+                        with a success or error message.
 
-        }
+    }
 
------------------------------------------------------Task G-------------------------------------------------------------
-G. Modify the parts to track maximum and minimum inventory by doing the following:
+**-----------------------------------------------------Task G-------------------------------------------------------------**
+
+**G. Modify the parts to track maximum and minimum inventory by doing the following:**
 
     • Add additional fields to the part entity for maximum and minimum inventory.
     • Modify the sample inventory to include the maximum and minimum fields.
@@ -284,7 +292,7 @@ G. Modify the parts to track maximum and minimum inventory by doing the followin
     • Rename the file the persistent storage is saved to.
     • Modify the code to enforce that the inventory is between or at the minimum and maximum value.
 
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
     InhousePartForm.html {
 
@@ -355,15 +363,16 @@ G. Modify the parts to track maximum and minimum inventory by doing the followin
 
     }
 
------------------------------------------------------Task H-------------------------------------------------------------
-H. Add validation for between or at the maximum and minimum fields. The validation must include the following:
+**-----------------------------------------------------Task H-------------------------------------------------------------**
+
+**H. Add validation for between or at the maximum and minimum fields. The validation must include the following:**
 
     • Display error messages for low inventory when adding and updating parts if the inventory is less than the minimum
       number of parts.
     • Display error messages for low inventory when adding and updating products lowers the part inventory below the minimum.
     • Display error messages when adding and updating parts if the inventory is greater than the maximum.
 
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
     AddInhousePartController.java {
         Removed unused imports.
@@ -427,10 +436,11 @@ H. Add validation for between or at the maximum and minimum fields. The validati
 
     }
 
------------------------------------------------------Task I-------------------------------------------------------------
-I. Add at least two unit tests for the maximum and minimum fields to the PartTest class in the test package
+**-----------------------------------------------------Task I-------------------------------------------------------------**
 
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+**I. Add at least two unit tests for the maximum and minimum fields to the PartTest class in the test package**
+
+**||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||**
 
     PartTest.java {
 
