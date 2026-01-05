@@ -66,8 +66,7 @@ C. Customize the HTML user interface for your customer’s application. The user
 D.  Add an “About” page to the application to describe your chosen customer’s company to web viewers and include
         navigation to and from the “About” page and the main screen.
 
-
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
         about.html {
             Whole page created from scratch.
@@ -88,7 +87,7 @@ E.  Add a sample inventory appropriate for your chosen store to the application.
               duplicate items cannot be added to your products. When duplicate items are added, make a
               “multi-pack” part.
 
-        ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
         On the Note: I made changes to the code to allow duplicate parts to be added to a product
                      instead of adding a new part with the multi-pack label. Parts are added to a list,
@@ -185,50 +184,9 @@ E.  Add a sample inventory appropriate for your chosen store to the application.
 
     }
 
-    AddInhousePartController.java {
-        Removed unused imports.
-
-        line 5 - Added import com.example.demo.repositories.PartRepository.
-
-        line 16 - Added import RedirectAttributes.
-
-        line 24, 25 - Added Autowired PartRepository partRepository.
-
-        line 39 - @PostMapping("/showFormAddInPart") - Added a helper method to check if the part already exists in the
-                  database, and to make sure minimum and maximum levels are set correctly.
-
-        line 54 to 56 - Added a flash message to show the success or error of the operation, after redirecting to the
-                        main screen.
-
-        line 60 to 84 - Helper methods to enhance readability and reusability:
-                        inventoryCheck: It validates the minimum and maximum levels set for the part, also validates
-                        that the part name is not already in the database.
-
-    }
-
     ProductRepository.java {
 
         line 18 - Added method Product findByName(String name), to verify if a product name already exists in the database.
-
-    }
-
-    AddOutsourcedPartController.java {
-        Removed unused imports.
-
-        line 5, 16 - Added import com.example.demo.repositories.PartRepository
-                           import org.springframework.web.servlet.mvc.support.RedirectAttributes
-
-        line 24, 25 - Added Autowired PartRepository partRepository.
-
-        line 39 - @PostMapping("/showFormAddInPart") - Added a helper method to check if the part already exists in the
-                  database, and to make sure minimum and maximum levels are set correctly.
-
-        line 54 to 56 - Added a flash message to show the success or error of the operation, after redirecting to the
-                        main screen.
-
-        line 60 to 84 - Helper methods to enhance readability and reusability:
-                        inventoryCheck: It validates the minimum and maximum levels set for the part, also validates
-                        that the part name is not already in the database.
 
     }
 
@@ -285,11 +243,14 @@ E.  Add a sample inventory appropriate for your chosen store to the application.
     }
 
 -----------------------------------------------------Task F-------------------------------------------------------------
-F.  Add a “Buy Now” button to your product list. Your “Buy Now” button must meet each of the following parameters:
+F. Add a “Buy Now” button to your product list. Your “Buy Now” button must meet each of the following parameters:
 
     • The “Buy Now” button must be next to the buttons that update and delete products.
-    • The button should decrement the inventory of that product by one. It should not affect the inventory of any of the associated parts.
+    • The button should decrement the inventory of that product by one. It should not affect the inventory of any of the
+      associated parts.
     • Display a message that indicates the success or failure of a purchase.
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
     mainscreen.html {
 
@@ -314,17 +275,160 @@ F.  Add a “Buy Now” button to your product list. Your “Buy Now” button m
         }
 
 -----------------------------------------------------Task G-------------------------------------------------------------
-G.
-InhousePartForm.html {
-line 11 to 34 - added context to the form inputs.
-    Added inputs for min and max inventory.
-}
+G. Modify the parts to track maximum and minimum inventory by doing the following:
 
- productForm.html {
-lines 8 to 10 - added links to the css files.
-lines 13 to 18 - added a div tag to the h1 at the top of the page.
-    Erased the action attribute from the form tag, theres already a thymeleaf for that.
- }
+    • Add additional fields to the part entity for maximum and minimum inventory.
+    • Modify the sample inventory to include the maximum and minimum fields.
+    • Add to the InhousePartForm and OutsourcedPartForm forms additional text inputs for the inventory so the user can
+      set the maximum and minimum values.
+    • Rename the file the persistent storage is saved to.
+    • Modify the code to enforce that the inventory is between or at the minimum and maximum value.
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+    InhousePartForm.html {
+
+        line 70 to 79 - Added inputs for min and max inventory.
+    }
+
+    OutsourcedPartForm.html {
+
+        line 67 to 74 - Added inputs for min and max inventory.
+
+    }
+
+    Part.java {
+
+        line 33 to 36 - Added two private integer field variables, to capture the minimum and maximum inventory
+                            levels for each part. Added @MIN to ensure variables are 0 or positive integers.
+
+        line 44 to 59 - Updated both constructors to set the variables for the minimum and maximum inventory levels.
+
+        line 130 to 147 - Added getters and setters for the min and max variables.
+
+    }
+
+    application.properties {
+
+        line 5 - Renamed database to FoodTruckInventory.
+
+    }
+
+    AddInhousePartController.java {
+        Removed unused imports.
+
+        line 5 - Added import com.example.demo.repositories.PartRepository.
+
+        line 16 - Added import RedirectAttributes.
+
+        line 24, 25 - Added Autowired PartRepository partRepository.
+
+        line 39 - @PostMapping("/showFormAddInPart") - Added a helper method to check if the part already exists in the
+                  database, and to make sure minimum and maximum levels are set correctly.
+
+        line 54 to 56 - Added a flash message to show the success of the operation, after redirecting to the
+                        main screen.
+
+        line 60 to 84 - Helper methods to enhance readability and reusability:
+                        inventoryCheck: It validates the minimum and maximum levels set for the part, also validates
+                        that the part name is not already in the database.
+
+    }
+
+    AddOutsourcedPartController.java {
+        Removed unused imports.
+
+        line 5, 16 - Added import com.example.demo.repositories.PartRepository
+                     import org.springframework.web.servlet.mvc.support.RedirectAttributes
+
+        line 24, 25 - Added Autowired PartRepository partRepository.
+
+        line 39 - @PostMapping("/showFormAddInPart") - Added a helper method to check if the part already exists in the
+                  database, and to make sure minimum and maximum levels are set correctly.
+
+        line 54 to 56 - Added a flash message to show the success of the operation, after redirecting to the
+                            main screen.
+
+        line 60 to 84 - Helper methods to enhance readability and reusability:
+                        inventoryCheck: It validates the minimum and maximum levels set for the part, also validates
+                        that the part name is not already in the database.
+
+    }
+
+-----------------------------------------------------Task H-------------------------------------------------------------
+H. Add validation for between or at the maximum and minimum fields. The validation must include the following:
+
+    • Display error messages for low inventory when adding and updating parts if the inventory is less than the minimum
+      number of parts.
+    • Display error messages for low inventory when adding and updating products lowers the part inventory below the minimum.
+    • Display error messages when adding and updating parts if the inventory is greater than the maximum.
+
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+    AddInhousePartController.java {
+        Removed unused imports.
+
+        line 5 - Added import com.example.demo.repositories.PartRepository.
+
+        line 16 - Added import RedirectAttributes.
+
+        line 24, 25 - Added Autowired PartRepository partRepository.
+
+        line 39 - @PostMapping("/showFormAddInPart") - Added a helper method to check if the part already exists in the
+                  database, and to make sure minimum and maximum levels are set correctly.
+
+        line 54 to 56 - Added a flash message to show the success of the operation, after redirecting to the
+                        main screen.
+
+        line 60 to 84 - Helper methods to enhance readability and reusability:
+                            inventoryCheck: It validates the minimum and maximum levels set for the part, also validates
+                            that the part name is not already in the database.
+
+    }
+
+        AddOutsourcedPartController.java {
+            Removed unused imports.
+
+        line 5, 16 - Added import com.example.demo.repositories.PartRepository
+                     import org.springframework.web.servlet.mvc.support.RedirectAttributes
+
+        line 24, 25 - Added Autowired PartRepository partRepository.
+
+        line 39 - @PostMapping("/showFormAddInPart") - Added a helper method to check if the part already exists in the
+                  database, and to make sure minimum and maximum levels are set correctly.
+
+        line 54 to 56 - Added a flash message to show the success of the operation, after redirecting to the
+                        main screen.
+
+        line 60 to 84 - Helper methods to enhance readability and reusability:
+                        inventoryCheck: It validates the minimum and maximum levels set for the part, also validates
+                        that the part name is not already in the database.
+
+    }
+
+    productForm.html {
+
+        lines 51 to 53 - Added Labour Cost field.
+
+        line 87 - Create a toggle button to show or hide the Available Parts table, since all parts are shown by
+                  default now. But when a product already has parts associated, they are hidden by default.
+
+        line 114 to 122 - Adding parts can be done by quantity.
+
+        line 152 - Shows the quantity of parts associated with the product.
+
+        line 191 to 207 - Script that controls the toggle button.
+
+        line 208 to 230 - Script to show the modal window, and the function that allows a product to be created, even if
+                          a part falls below the minimum inventory level.
+
+        line 232 to 252 - Added a modal window, to ask the user if they want to create a new product, even if a new part
+                          falls below the minimum inventory level.
+
+    }
+
+-----------------------------------------------------Task I-------------------------------------------------------------
+I.
 
 -----------------------------------CREATED-----------------------------------
 
